@@ -5,7 +5,7 @@ class InsufficientBalanceException extends Exception {
 }
 
 interface Payment {
-    void pay(double amount);
+    void UPIpay(double amount);
 }
 
 class BankAccount implements Payment {
@@ -15,10 +15,15 @@ class BankAccount implements Payment {
     public BankAccount(String name, double balance) {
         this.name = name;
         this.balance = balance;
+        System.out.println("Name: " + name + " Balance: $" + balance);
     }
     public  synchronized void deposit(double amount) {
-        balance += amount;
-        System.out.println("Deposited: ₹" + amount);
+        balance = balance+ amount;
+        System.out.println("Deposited: $" + amount);
+    }
+
+    public synchronized void showBalance() {
+        System.out.println("Balance: $" + balance);
     }
 
     public void withdraw(double amount) throws InsufficientBalanceException {
@@ -26,28 +31,25 @@ class BankAccount implements Payment {
             throw new InsufficientBalanceException("Not enough balance!");
         }
         balance = balance - amount;
-        System.out.println("Withdrawn: ₹" + amount);
+        System.out.println("Withdrawn: $" + amount);
     }
-    public void pay(double amount) {
-        System.out.println("Paid via UPI: ₹" + amount);
+    public void UPIpay(double amount) {
+        System.out.println("Paid via UPI: $" + amount);
         balance = balance - amount;
     }
-    public synchronized void showBalance() {
-        System.out.println("Name: " + name + " Balance: ₹" + balance);
-    }
+    
 }
 
 
-class TransactionThread extends Thread {
+class DemoThread extends Thread {
     private BankAccount account;
 
-    public TransactionThread(BankAccount account) {
+    public DemoThread(BankAccount account) {
         this.account = account;
     }
 
     public void run() {
         account.deposit(100);
-        account.showBalance();
         try{
             Thread.sleep(1000);
         }
@@ -55,6 +57,8 @@ class TransactionThread extends Thread {
         {
             System.out.println(e);
         }
+        account.showBalance();
+        
     }
 }
 
@@ -64,23 +68,21 @@ public class Bank {
 
         BankAccount acc = new BankAccount("Sradha", 1000);
 
-        acc.showBalance();
-
         acc.deposit(500);
         
-        acc.pay(200);
+        acc.UPIpay(200);
         acc.showBalance();
         try {
             acc.withdraw(300);
-          //  acc.withdraw(2000); 
+            acc.withdraw(2000); 
         } catch (InsufficientBalanceException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e);
         }
 
         acc.showBalance();
-        System.out.println("\nThread Demo:");
-        TransactionThread t1 = new TransactionThread(acc);
-        TransactionThread t2 = new TransactionThread(acc);
+        System.out.println("\nThreads");
+        DemoThread t1 = new DemoThread(acc);
+        DemoThread t2 = new DemoThread(acc);
 
         t1.start();
         t2.start();
